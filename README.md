@@ -55,7 +55,7 @@ Usage:
 Download the `vackup` file in this repository to your local machine in your shell path and make it executable.
 
 ```shell
-sudo curl -sSL https://raw.githubusercontent.com/BretFisher/docker-vackup/main/vackup -o /usr/local/bin/vackup && sudo chmod +x /usr/local/bin/vackup
+sudo curl -sSL https://raw.githubusercontent.com/jmartindf/docker-vackup/main/vackup -o /usr/local/bin/vackup && sudo chmod +x /usr/local/bin/vackup
 ```
 
 ## Error conditions
