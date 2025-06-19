@@ -2,6 +2,19 @@
 
 [![Lint Code Base](https://github.com/BretFisher/docker-vackup/actions/workflows/linter.yml/badge.svg)](https://github.com/BretFisher/docker-vackup/actions/workflows/linter.yml)
 
+## Fork Rationale ##
+
+Merged PRs:
+
+- [PR 16: Now actually importing into volume rather than /.](https://github.com/BretFisher/docker-vackup/pull/16)
+- [PR 27: Update bash reference](https://github.com/BretFisher/docker-vackup/pull/27)
+
+Resolved issues:
+
+- [Issue 29: Vackup import being saved to root of busybox](https://github.com/BretFisher/docker-vackup/issues/29)
+- [Issue 31: Export function creates a tar file owned by root](https://github.com/BretFisher/docker-vackup/issues/31)
+
+
 **This is now an [Official Docker Desktop Extension called "Volumes Backup & Share"](https://hub.docker.com/extensions/docker/volumes-backup-extension) which has more features, but I'll keep this repo around for historial purposes.**
 
 Vackup: (contraction of "volume backup")
