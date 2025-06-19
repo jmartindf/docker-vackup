@@ -6,23 +6,32 @@
 set -Eeo pipefail
 
 handle_error() {
-  case $# in
-    1) LINE_NUMBER=$1; EXIT_CODE=$? ;;
-    2) LINE_NUMBER=$1; EXIT_CODE=$2 ;;
-    *) LINE_NUMBER=$LINENO; EXIT_CODE=1 ;;
-  esac
+    case $# in
+    1)
+        LINE_NUMBER=$1
+        EXIT_CODE=$?
+        ;;
+    2)
+        LINE_NUMBER=$1
+        EXIT_CODE=$2
+        ;;
+    *)
+        LINE_NUMBER=$LINENO
+        EXIT_CODE=1
+        ;;
+    esac
 
-  if [ -n "${VACKUP_FAILURE_SCRIPT}" ]; then
-    /bin/bash "${VACKUP_FAILURE_SCRIPT}" "$LINE_NUMBER" $EXIT_CODE
-  fi
+    if [ -n "${VACKUP_FAILURE_SCRIPT}" ]; then
+        /bin/bash "${VACKUP_FAILURE_SCRIPT}" "$LINE_NUMBER" $EXIT_CODE
+    fi
 
-  exit $EXIT_CODE
+    exit $EXIT_CODE
 }
 
 trap 'handle_error $LINENO' ERR
 
 usage() {
-cat <<EOF
+    cat <<EOF
 
 "Docker Volume Backup". Replicates image management commands for volumes.
 
@@ -79,16 +88,16 @@ error() {
 }
 
 fulldirname() {
-  DIRECTORY=$(dirname "$1")
+    DIRECTORY=$(dirname "$1")
 
-  case "$DIRECTORY" in
+    case "$DIRECTORY" in
     /*) ;;
     .*) ;& # fallthrough
     *) DIRECTORY="$(pwd)/$DIRECTORY" ;;
-  esac
-  DIRECTORY=$(readlink -m "$DIRECTORY")
+    esac
+    DIRECTORY=$(readlink -m "$DIRECTORY")
 
-  echo "$DIRECTORY"
+    echo "$DIRECTORY"
 }
 
 if [ -z "$1" ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
@@ -104,23 +113,21 @@ cmd_export() {
         error usage 'Not enough arguments'
     fi
 
-    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME";
-    then
+    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME"; then
         error "Volume $VOLUME_NAME does not exist"
     fi
 
-# TODO: check if file exists on host, if it does
-# create a option for overwrite and check if that's set
+    # TODO: check if file exists on host, if it does
+    # create a option for overwrite and check if that's set
 
     DIRECTORY=$(fulldirname "$FILE_NAME")
     FILE_NAME=$(basename "$FILE_NAME")
 
     if ! docker run --rm \
-      -v "$VOLUME_NAME":/vackup-volume \
-      -v "$DIRECTORY":/vackup \
-      busybox \
-      tar -zcvf /vackup/"$FILE_NAME" /vackup-volume;
-    then
+        -v "$VOLUME_NAME":/vackup-volume \
+        -v "$DIRECTORY":/vackup \
+        busybox \
+        tar -zcvf /vackup/"$FILE_NAME" -C /vackup-volume .; then
         error 'Failed to start busybox backup container'
     fi
 
@@ -135,8 +142,7 @@ cmd_import() {
         error usage 'Not enough arguments'
     fi
 
-    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME";
-    then
+    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME"; then
         echo "Warning: Volume $VOLUME_NAME does not exist, creating..."
         docker volume create "$VOLUME_NAME"
     fi
@@ -155,11 +161,10 @@ cmd_import() {
     FILE_NAME=$(basename "$FILE_NAME")
 
     if ! docker run --rm \
-      -v "$VOLUME_NAME":/vackup-volume \
-      -v "$DIRECTORY":/vackup \
-      busybox \
-      tar -xvzf /vackup/"$FILE_NAME" -C /;
-    then
+        -v "$VOLUME_NAME":/vackup-volume \
+        -v "$DIRECTORY":/vackup \
+        busybox \
+        tar -xvzf /vackup/"$FILE_NAME" -C /vackup-volume; then
         error 'Failed to start busybox container'
     fi
 
@@ -174,16 +179,14 @@ cmd_save() {
         error usage 'Not enough arguments'
     fi
 
-    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME";
-    then
+    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME"; then
         error "Volume $VOLUME_NAME does not exist"
     fi
 
     if ! docker run \
-      -v "$VOLUME_NAME":/mount-volume \
-      busybox \
-      cp -Rp /mount-volume/. /volume-data/;
-    then
+        -v "$VOLUME_NAME":/mount-volume \
+        busybox \
+        cp -Rp /mount-volume/. /volume-data/; then
         error 'Failed to start busybox container'
     fi
 
@@ -204,17 +207,15 @@ cmd_load() {
         error usage 'Not enough arguments'
     fi
 
-    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME";
-    then
-      echo "Warning: Volume $VOLUME_NAME does not exist, creating..."
-      docker volume create "$VOLUME_NAME"
+    if ! docker volume inspect --format '{{.Name}}' "$VOLUME_NAME"; then
+        echo "Warning: Volume $VOLUME_NAME does not exist, creating..."
+        docker volume create "$VOLUME_NAME"
     fi
 
     if ! docker run --rm \
-      -v "$VOLUME_NAME":/mount-volume \
-      "$IMAGE_NAME" \
-      cp -Rp /volume-data/. /mount-volume/;
-    then
+        -v "$VOLUME_NAME":/mount-volume \
+        "$IMAGE_NAME" \
+        cp -Rp /volume-data/. /mount-volume/; then
         error "Failed to start container from $IMAGE_NAME"
     fi
 
@@ -223,11 +224,14 @@ cmd_load() {
 
 COMMAND="$1"
 case "$COMMAND" in
-  export) cmd_export "$@" ;;
-  import) cmd_import "$@" ;;
-  save) cmd_save "$@" ;;
-  load) cmd_load "$@" ;;
-  *) echo "Error: '$COMMAND' is not a recognized command" ; usage ;;
+export) cmd_export "$@" ;;
+import) cmd_import "$@" ;;
+save) cmd_save "$@" ;;
+load) cmd_load "$@" ;;
+*)
+    echo "Error: '$COMMAND' is not a recognized command"
+    usage
+    ;;
 esac
 
 exit 0
